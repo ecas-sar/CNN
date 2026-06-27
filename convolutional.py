@@ -2,11 +2,11 @@ import numpy as np
 
 class ConvolutionalLayer:
     def __init__(self, input_map, filter_maps, stride, activation_function):
-        self.input = input_map
+        self.input_map = input_map
         # Sometimes multiple filter maps are used on one input.
         self.filters = filter_maps
         self.stride = stride
-        # Current options are ReLu, Leaky ReLu, and Tanh, reasons decribed below.
+        # Current options are ReLu, Leaky ReLu, and Tanh, reasons decribed below in activation_function.
         self.actfunc = activation_function
 
     def activation_function(self, x):
@@ -20,7 +20,7 @@ class ConvolutionalLayer:
             if x > 0:
                 return x
             else: return 0.01*x
-            # Tanh is good as it is a differentiable function and therefre gradient descent works better.
+        # Tanh is good as it is a differentiable function and therefore gradient descent works better.
         if self.actfunc == "Tanh":
             return np.tanh(x)
         
@@ -32,14 +32,15 @@ class ConvolutionalLayer:
 
     def forward_propogate_one_filter(self, filter):
         # Note that it will be important to pick all these dimensions such that the size of the activation map is an integer.
-        activation_map = np.zeros(((self.input_map.shape - filter.shape)/self.stride + 1), 
-                                  ((self.input_map.shape - filter.shape)/self.stride + 1), 
+        # Note that shape returns a tuple but input_map and filter are assumed to be square, so we can just get the number at the 0th index.
+        activation_map = np.zeros((((self.input_map.shape[0] - filter.shape[0])/self.stride + 1), 
+                                  ((self.input_map.shape[0] - filter.shape[0])/self.stride + 1)), 
                                   dtype=float)
         
         for i in range(len(activation_map)):
-            for j in range(len(activation_map)):
+            for j in range(len(activation_map[0])):
                 # Current input segment here to ensure that we slide over the input map.
-                current_input_segment = self.input[self.stride*i:len(filter) + self.stride*i, j:len(filter[0]) + j]
+                current_input_segment = self.input_map[self.stride*i:len(filter) + self.stride*i, self.stride*j:len(filter[0]) + self.stride*j]
                 activation_map[i][j] = self.activation_function(self.linear_model_two_matrices(current_input_segment, filter))
         return activation_map
 
