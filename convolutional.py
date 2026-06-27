@@ -9,6 +9,9 @@ class ConvolutionalLayer:
         # Current options are ReLu, Leaky ReLu, and Tanh, reasons decribed below in activation_function.
         self.actfunc = activation_function
 
+    """Note that the activation function is being used here rather than 
+    in an activation layer class because there is little point having a whole other file just for the sake of applying
+    an activation function to the activation map when it can easily be done here, this makes the codebase look cleaner."""
     def activation_function(self, x):
         # ReLu is good as it is efficient and mitigates vanishing gradient problems.
         if self.actfunc == "ReLu":
@@ -26,7 +29,7 @@ class ConvolutionalLayer:
         
     def forward_propogate(self):
         activation_maps = [self.forward_propogate_one_filter(self.filters[i]) for i in range(len(self.filters))]
-        activation_tensor = np.stack(activation_maps)
+        activation_tensor = np.stack(activation_maps, axis=2)
         return activation_tensor
 
 
