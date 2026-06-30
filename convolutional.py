@@ -1,10 +1,10 @@
 import numpy as np
 
 class ConvolutionalLayer:
-    def __init__(self, input_map, filter_maps, stride, activation_function):
+    def __init__(self, input_map, num_filters, filter_size, stride, activation_function):
         self.input_map = input_map
-        # Sometimes multiple filter maps are used on one input.
-        self.filters = filter_maps
+        # Initial weights are multiplied by 0.01 in order to ensure stability during training.
+        self.filters = [np.random.randn(filter_size, filter_size) * 0.01 for _ in range(num_filters)]
         self.stride = stride
         # Current options are ReLu, Leaky ReLu, and Tanh, reasons decribed below in activation_function.
         self.actfunc = activation_function
@@ -19,17 +19,18 @@ class ConvolutionalLayer:
                 return x
             else: return 0
         # Leaky ReLu will be helpful in the case where we have dead neurons.
-        if self.actfunc == "Leaky ReLu":
+        elif self.actfunc == "Leaky ReLu":
             if x > 0:
                 return x
             else: return 0.01*x
         # Tanh is good as it is a differentiable function and therefore gradient descent works better.
-        if self.actfunc == "Tanh":
+        elif self.actfunc == "Tanh":
             return np.tanh(x)
+        else: return x
         
     def forward_propogate(self):
         activation_maps = [self.forward_propogate_one_filter(self.filters[i]) for i in range(len(self.filters))]
-        activation_tensor = np.stack(activation_maps, axis=2)
+        activation_tensor = np.stack(activation_maps)
         return activation_tensor
 
 
@@ -44,6 +45,7 @@ class ConvolutionalLayer:
             for j in range(len(activation_map[0])):
                 # Current input segment here to ensure that we slide over the input map.
                 current_input_segment = self.input_map[self.stride*i:len(filter) + self.stride*i, self.stride*j:len(filter[0]) + self.stride*j]
+                # We apply activation here also because it would be needlessly expensive to iterate over the whole tensory AGAIN just to apply activation to each element.
                 activation_map[i][j] = self.activation_function(self.linear_model_two_matrices(current_input_segment, filter))
         return activation_map
 

@@ -8,8 +8,8 @@ class PoolingLayer:
         self.pool_method = pool_method
 
     def pool_everything(self):
-        pooled_maps = [self.pool_each_layer(self.input_map[:, :, i]) for i in range(len(self.input_map[0][0]))]
-        pooled_tensor = np.stack(pooled_maps, axis=2)
+        pooled_maps = [self.pool_each_layer(self.input_map[i]) for i in range(len(self.input_map[0][0]))]
+        pooled_tensor = np.stack(pooled_maps)
         return pooled_tensor
 
     def pool_each_layer(self, input_layer):
